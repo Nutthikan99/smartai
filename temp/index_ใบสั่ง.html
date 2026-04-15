@@ -1,0 +1,590 @@
+<!DOCTYPE HTML>
+<html lang="th">
+<head>
+  <title>Traffic Fine Unlock</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+  <link rel="stylesheet" href="assets/css/main.css" />
+  <noscript><link rel="stylesheet" href="assets/css/noscript.css" /></noscript>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+  <style>
+    body { background: #0b1020; }
+    #page-wrapper {
+      background:
+        radial-gradient(circle at top right, rgba(72,155,255,.16), transparent 28%),
+        linear-gradient(180deg, #0b1020 0%, #121a2d 100%);
+    }
+    #header h1 a { letter-spacing: .08em; }
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 6em 1.25em 3em;
+    }
+    .shell {
+      width: 100%;
+      max-width: 1280px;
+      display: grid;
+      grid-template-columns: 0.95fr 1.05fr;
+      gap: 2rem;
+      align-items: stretch;
+    }
+    .glass {
+      background: rgba(15,23,42,.78);
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 1.25rem;
+      box-shadow: 0 24px 70px rgba(0,0,0,.35);
+      backdrop-filter: blur(14px);
+    }
+    .left-panel, .right-panel { padding: 2rem; }
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: .5rem;
+      padding: .45rem .8rem;
+      border-radius: 999px;
+      background: rgba(255,255,255,.05);
+      border: 1px solid rgba(255,255,255,.07);
+      color: #99b6ff;
+      letter-spacing: .08em;
+      font-size: .72rem;
+      text-transform: uppercase;
+      margin-bottom: 1rem;
+    }
+    .main-title {
+      margin: 0 0 1rem;
+      font-size: 2.6rem;
+      line-height: 1.08;
+      border-bottom: 0;
+      text-transform: none;
+    }
+    .desc {
+      color: rgba(255,255,255,.76);
+      line-height: 1.9;
+      margin-bottom: 1.5rem;
+    }
+    .steps {
+      display: grid;
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+    .step-card {
+      display: flex;
+      gap: 1rem;
+      align-items: flex-start;
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.06);
+      border-radius: 1rem;
+      padding: 1rem 1.1rem;
+    }
+    .step-no {
+      width: 2.2rem;
+      height: 2.2rem;
+      border-radius: 999px;
+      background: linear-gradient(135deg, #2563eb, #3b82f6);
+      color: #fff;
+      display: grid;
+      place-items: center;
+      flex: 0 0 auto;
+      font-weight: 700;
+    }
+    .step-title {
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: .2rem;
+    }
+    .step-text {
+      color: rgba(255,255,255,.72);
+      line-height: 1.7;
+      font-size: .95rem;
+    }
+    .ticket-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    .ticket-title {
+      margin: 0;
+      font-size: 1.9rem;
+      border-bottom: 0;
+      text-transform: none;
+    }
+    .ticket-sub {
+      color: rgba(255,255,255,.65);
+      margin-top: .25rem;
+      font-size: .95rem;
+    }
+    .status-chip {
+      background: rgba(255,255,255,.05);
+      color: #99b6ff;
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 999px;
+      padding: .45rem .8rem;
+      font-size: .75rem;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+    .ticket-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: .85rem;
+      margin-bottom: .9rem;
+    }
+    .panel {
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.06);
+      border-radius: 1rem;
+      padding: 1rem 1.1rem;
+    }
+    .label {
+      color: rgba(255,255,255,.55);
+      font-size: .76rem;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      margin-bottom: .45rem;
+    }
+    .value {
+      color: rgba(255,255,255,.95);
+      font-size: 1rem;
+      font-weight: 600;
+      line-height: 1.55;
+      word-break: break-word;
+    }
+    .wide-panel { margin-bottom: .9rem; }
+    .car-image-box {
+      background: rgba(255,255,255,.03);
+      border: 1px solid rgba(255,255,255,.06);
+      border-radius: 1rem;
+      padding: .75rem;
+      margin-bottom: .9rem;
+    }
+    .car-image {
+      width: 100%;
+      height: 220px;
+      object-fit: cover;
+      border-radius: .8rem;
+      background: #0f172a;
+      display: block;
+    }
+    .fine-amount {
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: #fbbf24;
+      line-height: 1.2;
+    }
+    .qr-frame {
+      background: linear-gradient(180deg, #fff 0%, #f7fafc 100%);
+      border-radius: 1.2rem;
+      padding: 1.25rem;
+      min-height: 240px;
+      display: grid;
+      place-items: center;
+      position: relative;
+      margin-bottom: .9rem;
+    }
+    .qr-badge {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      background: #111827;
+      color: #fff;
+      border-radius: 999px;
+      padding: .35rem .75rem;
+      font-size: .72rem;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+    }
+    .status-row {
+      display: flex;
+      align-items: center;
+      gap: .7rem;
+      font-size: 1.12rem;
+      font-weight: 700;
+    }
+    .status-dot {
+      width: .85rem;
+      height: .85rem;
+      border-radius: 999px;
+      background: #f59e0b;
+      box-shadow: 0 0 0 8px rgba(245,158,11,.12);
+      animation: pulse 1.6s infinite;
+    }
+    .status-dot.success {
+      background: #22c55e;
+      box-shadow: 0 0 0 8px rgba(34,197,94,.15);
+      animation: none;
+    }
+    .status-dot.countdown {
+      background: #3b82f6;
+      box-shadow: 0 0 0 8px rgba(59,130,246,.14);
+      animation: pulse 1s infinite;
+    }
+    .meta-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: .85rem;
+      margin-top: .9rem;
+    }
+    .actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: .85rem;
+      margin-top: .9rem;
+    }
+    .button.primary.sim {
+      background: linear-gradient(90deg, #2563eb, #3b82f6);
+      border: 0;
+      box-shadow: none;
+    }
+    .button.secondary.sim {
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.08);
+      color: #fff !important;
+      box-shadow: none;
+    }
+    .pin-box {
+      display: none;
+      text-align: center;
+      padding: 1.4rem 1rem 1.15rem;
+      border-radius: 1.15rem;
+      border: 1px solid rgba(34,197,94,.22);
+      background: linear-gradient(180deg, rgba(34,197,94,.18), rgba(34,197,94,.09));
+      margin-top: .9rem;
+    }
+    .pin-title {
+      margin: 0 0 .45rem;
+      color: rgba(255,255,255,.82);
+      font-size: .9rem;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+    }
+    .pin-code {
+      margin: 0;
+      font-size: 3rem;
+      font-weight: 800;
+      letter-spacing: .38rem;
+      color: #fff;
+    }
+    .pin-sub {
+      margin: .5rem 0 0;
+      color: rgba(255,255,255,.63);
+      font-size: .9rem;
+    }
+    .footer-note {
+      color: rgba(255,255,255,.55);
+      font-size: .9rem;
+      text-align: center;
+      margin-top: .9rem;
+    }
+    @keyframes pulse {
+      0% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.08); opacity: .82; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    @media screen and (max-width: 980px) {
+      .shell { grid-template-columns: 1fr; }
+      .main-title { font-size: 2rem; }
+    }
+    @media screen and (max-width: 640px) {
+      .left-panel, .right-panel { padding: 1.2rem; }
+      .ticket-grid, .meta-grid, .actions { grid-template-columns: 1fr; }
+      .main-title { font-size: 1.75rem; }
+      .car-image { height: 170px; }
+      .pin-code { font-size: 2.35rem; letter-spacing: .24rem; }
+    }
+  </style>
+</head>
+<body class="is-preload">
+  <div id="page-wrapper">
+    <header id="header" class="alt">
+      <h1><a href="index.html">Wheel Lock Unlock</a></h1>
+    </header>
+
+    <section class="hero">
+      <div class="shell">
+        <section class="glass left-panel">
+          <div class="eyebrow"><span class="icon solid fa-unlock"></span> ขั้นตอนการปลดล็อคที่ล็อคล้อ</div>
+          <h2 class="main-title">ชำระค่าปรับและรับ PIN เพื่อปลดล็อค</h2>
+          <p class="desc">
+            โปรดดำเนินการตามขั้นตอนด้านล่างเพื่อปลดล็อคที่ล็อคล้อรถยนต์ของท่าน
+            ระบบนี้เป็นโหมดจำลองสำหรับทดสอบการทำงานก่อนเชื่อมธนาคารจริง
+          </p>
+
+          <div class="steps">
+            <div class="step-card">
+              <div class="step-no">1</div>
+              <div>
+                <div class="step-title">แสกนที่ NFC</div>
+                <div class="step-text">แตะหรือสแกน NFC ที่ติดอยู่กับอุปกรณ์ล็อคล้อ เพื่อเปิดหน้าชำระค่าปรับนี้</div>
+              </div>
+            </div>
+
+            <div class="step-card">
+              <div class="step-no">2</div>
+              <div>
+                <div class="step-title">แสกน QR Code จ่ายเงิน</div>
+                <div class="step-text">สแกน QR Code PromptPay เพื่อดำเนินการชำระค่าปรับตามยอดที่แสดงในใบสั่ง</div>
+              </div>
+            </div>
+
+            <div class="step-card">
+              <div class="step-no">3</div>
+              <div>
+                <div class="step-title">เมื่อชำระเงินเรียบร้อย ระบบจะส่ง PIN ที่ได้รับปลดล็อคมาให้</div>
+                <div class="step-text">ในโหมดจำลองนี้ ให้กดปุ่ม “สแกนแล้ว” จากนั้นระบบจะนับถอยหลัง 3 วินาทีก่อนแสดง PIN 3 หลัก</div>
+              </div>
+            </div>
+
+            <div class="step-card">
+              <div class="step-no">4</div>
+              <div>
+                <div class="step-title">ปลดล็อคและนำที่ล็อคล้อกลับบ้าน</div>
+                <div class="step-text">เมื่อได้รับ PIN แล้ว ให้นำไปใช้ปลดล็อคอุปกรณ์ และนำที่ล็อคล้อกลับคืนตามขั้นตอนของเจ้าหน้าที่</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="glass right-panel">
+          <div class="ticket-header">
+            <div>
+              <h2 class="ticket-title">ใบสั่งจราจร</h2>
+              <div class="ticket-sub">ข้อมูลการกระทำผิดและการชำระค่าปรับ</div>
+            </div>
+            <div class="status-chip">Simulation</div>
+          </div>
+
+          <div class="ticket-grid">
+            <div class="panel">
+              <div class="label">เลขที่ใบสั่ง</div>
+              <div class="value" id="ticketNo">TKT-2026-0501-0099</div>
+            </div>
+            <div class="panel">
+              <div class="label">ทะเบียนรถ</div>
+              <div class="value" id="plateNo">1กข 1234 กรุงเทพมหานคร</div>
+            </div>
+            <div class="panel">
+              <div class="label">วันเวลา</div>
+              <div class="value" id="ticketDateTime">1 พ.ค. 2569 14:30 น.</div>
+            </div>
+            <div class="panel">
+              <div class="label">สถานที่</div>
+              <div class="value" id="ticketLocation">ถนนพหลโยธิน เขตจตุจักร กรุงเทพมหานคร</div>
+            </div>
+          </div>
+
+          <div class="panel wide-panel">
+            <div class="label">ฐานความผิด</div>
+            <div class="value" id="offenseText">จอดรถในบริเวณห้ามจอด หรือกีดขวางการจราจร</div>
+          </div>
+
+          <div class="car-image-box">
+            <img
+              id="carImage"
+              class="car-image"
+              src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1200&q=80"
+              alt="รูปรถ"
+            />
+          </div>
+
+          <div class="panel">
+            <div class="label">ยอดค่าปรับ</div>
+            <div class="fine-amount" id="fineAmount">฿ 500</div>
+          </div>
+
+          <div class="qr-frame">
+            <div class="qr-badge">PromptPay</div>
+            <div id="qrcode"></div>
+          </div>
+
+          <div class="panel">
+            <div class="label">สถานะการชำระเงิน</div>
+            <div class="status-row">
+              <span class="status-dot" id="statusDot"></span>
+              <span id="statusText">รอชำระเงิน</span>
+            </div>
+          </div>
+
+          <div class="meta-grid">
+            <div class="panel">
+              <div class="label">Transaction ID</div>
+              <div class="value" id="transactionCode">SIM-FINE-001</div>
+            </div>
+            <div class="panel">
+              <div class="label">สถานะระบบ</div>
+              <div class="value" id="systemMode">โหมดจำลอง</div>
+            </div>
+          </div>
+
+          <div class="actions">
+            <a href="#" class="button primary sim" id="simulateScanBtn">สแกนแล้ว</a>
+            <a href="#" class="button secondary sim" id="resetBtn">รีเซ็ต</a>
+          </div>
+
+          <div class="pin-box" id="pinBox">
+            <p class="pin-title">PIN 3 หลักสำหรับปลดล็อค</p>
+            <p class="pin-code" id="pinCode">000</p>
+            <p class="pin-sub">ระบบแสดง PIN หลังจำลองว่าชำระเงินสำเร็จ</p>
+          </div>
+
+          <div class="footer-note">รองรับการส่งค่าแบบ URL: ?ticket=TKT-2026-0501-0099</div>
+        </section>
+      </div>
+    </section>
+  </div>
+
+  <script src="assets/js/jquery.min.js"></script>
+  <script src="assets/js/jquery.scrollex.min.js"></script>
+  <script src="assets/js/browser.min.js"></script>
+  <script src="assets/js/breakpoints.min.js"></script>
+  <script src="assets/js/util.js"></script>
+  <script src="assets/js/main.js"></script>
+  <script>
+    const el = {
+      qrcode: document.getElementById('qrcode'),
+      statusText: document.getElementById('statusText'),
+      statusDot: document.getElementById('statusDot'),
+      transactionCode: document.getElementById('transactionCode'),
+      pinBox: document.getElementById('pinBox'),
+      pinCode: document.getElementById('pinCode'),
+      fineAmount: document.getElementById('fineAmount'),
+      plateNo: document.getElementById('plateNo'),
+      carImage: document.getElementById('carImage'),
+      ticketNo: document.getElementById('ticketNo'),
+      ticketDateTime: document.getElementById('ticketDateTime'),
+      ticketLocation: document.getElementById('ticketLocation'),
+      offenseText: document.getElementById('offenseText'),
+      simulateScanBtn: document.getElementById('simulateScanBtn'),
+      resetBtn: document.getElementById('resetBtn'),
+      systemMode: document.getElementById('systemMode')
+    };
+
+    const ticketDatabase = {
+      "TKT-2026-0501-0099": {
+        transactionId: "SIM-FINE-001",
+        ticketNo: "TKT-2026-0501-0099",
+        plateNo: "1กข 1234 กรุงเทพมหานคร",
+        fineAmount: 500,
+        ticketDateTime: "1 พ.ค. 2569 14:30 น.",
+        ticketLocation: "ถนนพหลโยธิน เขตจตุจักร กรุงเทพมหานคร",
+        offenseText: "จอดรถในบริเวณห้ามจอด หรือกีดขวางการจราจร",
+        carImage: "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1200&q=80"
+      }
+    };
+
+    let countdownTimer = null;
+
+    function getUrlParams() {
+      return new URLSearchParams(window.location.search);
+    }
+
+    function generateRandomPin3() {
+      return Math.floor(100 + Math.random() * 900).toString();
+    }
+
+    function setWaitingStatus() {
+      el.statusDot.classList.remove('success', 'countdown');
+      el.statusText.textContent = 'รอชำระเงิน';
+      el.pinBox.style.display = 'none';
+      el.systemMode.textContent = 'โหมดจำลอง';
+    }
+
+    function setCountdownStatus(second) {
+      el.statusDot.classList.remove('success');
+      el.statusDot.classList.add('countdown');
+      el.statusText.textContent = `กำลังตรวจสอบการชำระเงิน (${second})`;
+      el.systemMode.textContent = 'กำลังนับถอยหลัง';
+    }
+
+    function setPaidStatus() {
+      el.statusDot.classList.remove('countdown');
+      el.statusDot.classList.add('success');
+      el.statusText.textContent = 'ชำระเงินสำเร็จ';
+      el.systemMode.textContent = 'ยืนยันแล้ว';
+    }
+
+    async function renderQr(text) {
+      el.qrcode.innerHTML = '';
+      const canvas = document.createElement('canvas');
+      await QRCode.toCanvas(canvas, text, { width: 220, margin: 2 });
+      el.qrcode.appendChild(canvas);
+    }
+
+    function loadData() {
+      const params = getUrlParams();
+      const ticketId = params.get('ticket') || 'TKT-2026-0501-0099';
+      const data = ticketDatabase[ticketId] || ticketDatabase['TKT-2026-0501-0099'];
+
+      el.transactionCode.textContent = data.transactionId;
+      el.ticketNo.textContent = data.ticketNo;
+      el.plateNo.textContent = data.plateNo;
+      el.fineAmount.textContent = `฿ ${data.fineAmount.toLocaleString()}`;
+      el.ticketDateTime.textContent = data.ticketDateTime;
+      el.ticketLocation.textContent = data.ticketLocation;
+      el.offenseText.textContent = data.offenseText;
+      el.carImage.src = data.carImage;
+
+      const qrText = `PROMPTPAY|TX=${data.transactionId}|AMOUNT=${data.fineAmount}|TICKET=${data.ticketNo}`;
+      renderQr(qrText);
+    }
+
+    function completePayment() {
+      const pin = generateRandomPin3();
+      setPaidStatus();
+      el.pinCode.textContent = pin;
+      el.pinBox.style.display = 'block';
+    }
+
+    function startCountdown() {
+      if (countdownTimer) clearInterval(countdownTimer);
+
+      let remaining = 3;
+      setCountdownStatus(remaining);
+
+      countdownTimer = setInterval(() => {
+        remaining -= 1;
+        if (remaining > 0) {
+          setCountdownStatus(remaining);
+        } else {
+          clearInterval(countdownTimer);
+          countdownTimer = null;
+          completePayment();
+        }
+      }, 1000);
+    }
+
+    function resetSimulation() {
+      if (countdownTimer) {
+        clearInterval(countdownTimer);
+        countdownTimer = null;
+      }
+      setWaitingStatus();
+    }
+
+    function bindEvents() {
+      el.simulateScanBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        startCountdown();
+      });
+
+      el.resetBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        resetSimulation();
+      });
+    }
+
+    function init() {
+      loadData();
+      setWaitingStatus();
+      bindEvents();
+    }
+
+    init();
+  </script>
+</body>
+</html>

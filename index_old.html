@@ -1,0 +1,433 @@
+<!DOCTYPE HTML>
+<html lang="th">
+<head>
+  <title>SmartKey Payment</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+  <link rel="stylesheet" href="assets/css/main.css" />
+  <noscript><link rel="stylesheet" href="assets/css/noscript.css" /></noscript>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+  <style>
+    body { background: #0b0f19; }
+    #page-wrapper { background: radial-gradient(circle at top right, rgba(72,155,255,.18), transparent 28%), linear-gradient(180deg, #0b0f19 0%, #111827 100%); }
+    #header h1 a { letter-spacing: .08em; }
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 6em 1.5em 3em;
+    }
+    .pay-shell {
+      width: 100%;
+      max-width: 1180px;
+      display: grid;
+      grid-template-columns: 1.05fr .95fr;
+      gap: 2.5rem;
+      align-items: stretch;
+    }
+    .glass {
+      background: rgba(17,24,39,.72);
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 1.25rem;
+      box-shadow: 0 24px 70px rgba(0,0,0,.35);
+      backdrop-filter: blur(14px);
+    }
+    .intro {
+      padding: 3rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .intro::after {
+      content: '';
+      position: absolute;
+      inset: auto -10% -35% auto;
+      width: 320px;
+      height: 320px;
+      border-radius: 999px;
+      background: radial-gradient(circle, rgba(72,155,255,.25), transparent 65%);
+      pointer-events: none;
+    }
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: .5rem;
+      padding: .45rem .8rem;
+      border-radius: 999px;
+      background: rgba(255,255,255,.05);
+      border: 1px solid rgba(255,255,255,.07);
+      color: #99b6ff;
+      letter-spacing: .08em;
+      font-size: .72rem;
+      text-transform: uppercase;
+      margin-bottom: 1.25rem;
+    }
+    .intro h2 {
+      margin: 0 0 1rem;
+      font-size: 3rem;
+      line-height: 1.08;
+      letter-spacing: -.02em;
+      text-transform: none;
+      border-bottom: 0;
+    }
+    .intro p {
+      color: rgba(255,255,255,.78);
+      font-size: 1rem;
+      line-height: 1.9;
+      margin-bottom: 2rem;
+    }
+    .feature-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: grid;
+      gap: 1rem;
+    }
+    .feature-list li {
+      display: flex;
+      gap: .9rem;
+      align-items: flex-start;
+      color: rgba(255,255,255,.88);
+    }
+    .feature-list li .icon {
+      width: 2.2rem;
+      height: 2.2rem;
+      border-radius: 999px;
+      background: rgba(72,155,255,.12);
+      color: #7eb3ff;
+      display: grid;
+      place-items: center;
+      flex: 0 0 auto;
+    }
+    .payment-card {
+      padding: 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.2rem;
+      justify-content: center;
+    }
+    .qr-frame {
+      background: linear-gradient(180deg, #fff 0%, #f7fafc 100%);
+      border-radius: 1.2rem;
+      padding: 1.25rem;
+      min-height: 305px;
+      display: grid;
+      place-items: center;
+      position: relative;
+    }
+    .qr-badge {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      background: #111827;
+      color: #fff;
+      border-radius: 999px;
+      padding: .35rem .75rem;
+      font-size: .72rem;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+    }
+    .panel {
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.06);
+      border-radius: 1rem;
+      padding: 1rem 1.1rem;
+    }
+    .panel-label {
+      color: rgba(255,255,255,.55);
+      font-size: .78rem;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      margin-bottom: .45rem;
+    }
+    .status-row {
+      display: flex;
+      align-items: center;
+      gap: .7rem;
+      font-size: 1.2rem;
+      font-weight: 600;
+    }
+    .status-dot {
+      width: .85rem;
+      height: .85rem;
+      border-radius: 999px;
+      background: #f59e0b;
+      box-shadow: 0 0 0 8px rgba(245,158,11,.12);
+      animation: pulse 1.6s infinite;
+    }
+    .status-dot.success {
+      background: #22c55e;
+      box-shadow: 0 0 0 8px rgba(34,197,94,.15);
+      animation: none;
+    }
+    .meta-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: .85rem;
+    }
+    .meta-value {
+      font-size: 1.05rem;
+      font-weight: 600;
+      word-break: break-word;
+    }
+    .pin-box {
+      display: none;
+      text-align: center;
+      padding: 1.4rem 1rem 1.15rem;
+      border-radius: 1.15rem;
+      border: 1px solid rgba(34,197,94,.22);
+      background: linear-gradient(180deg, rgba(34,197,94,.18), rgba(34,197,94,.09));
+    }
+    .pin-title {
+      margin: 0 0 .45rem;
+      color: rgba(255,255,255,.82);
+      font-size: .9rem;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+    }
+    .pin-code {
+      margin: 0;
+      font-size: 3rem;
+      font-weight: 800;
+      letter-spacing: .38rem;
+      color: #fff;
+    }
+    .pin-sub {
+      margin: .5rem 0 0;
+      color: rgba(255,255,255,.63);
+      font-size: .9rem;
+    }
+    .error-box {
+      display: none;
+      border-radius: .9rem;
+      padding: .95rem 1rem;
+      background: rgba(239,68,68,.14);
+      border: 1px solid rgba(239,68,68,.25);
+      color: #fecaca;
+      font-size: .95rem;
+      line-height: 1.65;
+    }
+    .footer-note {
+      color: rgba(255,255,255,.55);
+      font-size: .9rem;
+      text-align: center;
+      margin-top: .1rem;
+    }
+    @keyframes pulse {
+      0% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.08); opacity: .8; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    @media screen and (max-width: 980px) {
+      .pay-shell { grid-template-columns: 1fr; }
+      .intro h2 { font-size: 2.35rem; }
+    }
+    @media screen and (max-width: 640px) {
+      .hero { padding-top: 5rem; }
+      .intro, .payment-card { padding: 1.4rem; }
+      .meta-grid { grid-template-columns: 1fr; }
+      .pin-code { font-size: 2.35rem; letter-spacing: .24rem; }
+      .intro h2 { font-size: 1.9rem; }
+    }
+  </style>
+</head>
+<body class="is-preload">
+  <div id="page-wrapper">
+    <header id="header" class="alt">
+      <h1><a href="index.html">SmartKey</a></h1>
+    </header>
+
+    <section class="hero">
+      <div class="pay-shell">
+        <section class="glass intro">
+          <div class="eyebrow"><span class="icon solid fa-lock"></span> Secure NFC Payment</div>
+          <h2>ชำระเงินผ่าน QR แล้วรับ PIN 4 หลักทันที</h2>
+          <p>
+            แตะ NFC เพื่อเปิดหน้าชำระเงิน สแกน QR จากนั้นระบบจะตรวจสอบสถานะอัตโนมัติทุก 3 วินาที
+            และแสดงรหัส PIN แบบสุ่ม 4 หลักเมื่อการชำระเงินสำเร็จ
+          </p>
+          <ul class="feature-list">
+            <li><span class="icon solid fa-qrcode"></span><span>QR payment session ใหม่ถูกสร้างทุกครั้งเมื่อเปิดจาก NFC</span></li>
+            <li><span class="icon solid fa-sync"></span><span>ระบบ polling อัตโนมัติทุก 3 วินาทีจนกว่าจะได้รับการยืนยันการชำระเงิน</span></li>
+            <li><span class="icon solid fa-key"></span><span>PIN แบบสุ่ม 4 หลักถูกสร้างจาก backend เท่านั้น ไม่ถูกฝังไว้บน NFC</span></li>
+          </ul>
+        </section>
+
+        <section class="glass payment-card">
+          <div class="qr-frame">
+            <div class="qr-badge" id="providerBadge">PromptPay</div>
+            <div id="qrcode"></div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-label">สถานะการชำระเงิน</div>
+            <div class="status-row" id="statusRow">
+              <span class="status-dot" id="statusDot"></span>
+              <span id="statusText">รอชำระเงิน</span>
+            </div>
+          </div>
+
+          <div class="meta-grid">
+            <div class="panel">
+              <div class="panel-label">Transaction ID</div>
+              <div class="meta-value" id="transactionCode">-</div>
+            </div>
+            <div class="panel">
+              <div class="panel-label">ตรวจสถานะทุก</div>
+              <div class="meta-value">3 วินาที</div>
+            </div>
+          </div>
+
+          <div class="pin-box" id="pinBox">
+            <p class="pin-title">PIN สำหรับใช้งาน</p>
+            <p class="pin-code" id="pinCode">0000</p>
+            <p class="pin-sub">PIN จะปรากฏหลังจากระบบยืนยันการชำระเงินสำเร็จ</p>
+          </div>
+
+          <div class="error-box" id="errorBox"></div>
+          <div class="footer-note">Frontend เรียก API ผ่าน <span id="apiHost">api.innovetixai.com</span></div>
+        </section>
+      </div>
+    </section>
+  </div>
+
+  <script src="assets/js/jquery.min.js"></script>
+  <script src="assets/js/jquery.scrollex.min.js"></script>
+  <script src="assets/js/browser.min.js"></script>
+  <script src="assets/js/breakpoints.min.js"></script>
+  <script src="assets/js/util.js"></script>
+  <script src="assets/js/main.js"></script>
+  <script>
+    const API_BASE = window.SMARTKEY_API_BASE || 'https://api.innovetixai.com';
+    const DEFAULT_PROVIDER = 'promptpay';
+    const DEFAULT_AMOUNT = 50;
+
+    const el = {
+      qrcode: document.getElementById('qrcode'),
+      providerBadge: document.getElementById('providerBadge'),
+      statusText: document.getElementById('statusText'),
+      statusDot: document.getElementById('statusDot'),
+      transactionCode: document.getElementById('transactionCode'),
+      pinBox: document.getElementById('pinBox'),
+      pinCode: document.getElementById('pinCode'),
+      errorBox: document.getElementById('errorBox'),
+      apiHost: document.getElementById('apiHost')
+    };
+
+    el.apiHost.textContent = API_BASE.replace(/^https?:\/\//, '');
+
+    let transactionId = null;
+    let pollTimer = null;
+
+    function getUrlParams() {
+      return new URLSearchParams(window.location.search);
+    }
+
+    function setStatusWaiting() {
+      el.statusDot.classList.remove('success');
+      el.statusText.textContent = 'รอชำระเงิน';
+    }
+
+    function setStatusPaid() {
+      el.statusDot.classList.add('success');
+      el.statusText.textContent = 'ชำระเงินสำเร็จ';
+    }
+
+    function setStatusExpired() {
+      el.statusDot.classList.remove('success');
+      el.statusText.textContent = 'รายการหมดอายุ';
+    }
+
+    function showError(message) {
+      el.errorBox.style.display = 'block';
+      el.errorBox.textContent = message;
+    }
+
+    function clearError() {
+      el.errorBox.style.display = 'none';
+      el.errorBox.textContent = '';
+    }
+
+    async function renderQr(text) {
+      el.qrcode.innerHTML = '';
+      try {
+        const canvas = document.createElement('canvas');
+        await QRCode.toCanvas(canvas, text, { width: 235, margin: 2 });
+        el.qrcode.appendChild(canvas);
+      } catch (err) {
+        showError('ไม่สามารถสร้าง QR code ได้');
+      }
+    }
+
+    async function createPaymentSession() {
+      clearError();
+
+      const params = getUrlParams();
+      const tagId = params.get('tag_id') || 'NFC001';
+      const provider = params.get('provider') || DEFAULT_PROVIDER;
+      const amount = Number(params.get('amount') || DEFAULT_AMOUNT);
+
+      const res = await fetch(`${API_BASE}/api/create-payment-session`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tag_id: tagId, provider, amount })
+      });
+
+      if (!res.ok) {
+        throw new Error('สร้าง payment session ไม่สำเร็จ');
+      }
+
+      const data = await res.json();
+      transactionId = data.transaction_id;
+      el.transactionCode.textContent = transactionId;
+      el.providerBadge.textContent = (data.provider || provider).toUpperCase();
+      await renderQr(data.qr_text);
+    }
+
+    async function checkStatus() {
+      if (!transactionId) return;
+      try {
+        const res = await fetch(`${API_BASE}/api/payment-status/${transactionId}`);
+        if (!res.ok) throw new Error('ไม่สามารถตรวจสอบสถานะได้');
+        const data = await res.json();
+
+        if (data.status === 'PAID') {
+          setStatusPaid();
+          el.pinCode.textContent = data.pin || '----';
+          el.pinBox.style.display = 'block';
+          if (pollTimer) {
+            clearInterval(pollTimer);
+            pollTimer = null;
+          }
+        } else if (data.status === 'EXPIRED') {
+          setStatusExpired();
+          if (pollTimer) {
+            clearInterval(pollTimer);
+            pollTimer = null;
+          }
+        } else {
+          setStatusWaiting();
+        }
+      } catch (err) {
+        showError(err.message || 'เกิดข้อผิดพลาดระหว่างตรวจสอบสถานะ');
+      }
+    }
+
+    function startPolling() {
+      checkStatus();
+      pollTimer = setInterval(checkStatus, 3000);
+    }
+
+    async function init() {
+      try {
+        await createPaymentSession();
+        startPolling();
+      } catch (err) {
+        showError(err.message || 'เริ่มต้นระบบไม่สำเร็จ');
+      }
+    }
+
+    init();
+  </script>
+</body>
+</html>

@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Police Ticket Writer - Camera Capture</title>
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+  <style>
+    :root{
+      --bg:#0b1020; --bg2:#121a2d; --card:rgba(15,23,42,.82); --line:rgba(255,255,255,.08);
+      --text:#fff; --muted:rgba(255,255,255,.68); --blue:#3b82f6; --blue2:#2563eb;
+      --green:#16a34a; --amber:#f59e0b; --red:#ef4444;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif; color:var(--text);
+      background:
+        radial-gradient(circle at top right, rgba(72,155,255,.16), transparent 28%),
+        linear-gradient(180deg, var(--bg) 0%, var(--bg2) 100%);
+    }
+    .wrap{max-width:1400px; margin:0 auto; padding:28px 18px 36px}
+    .title{font-size:42px; font-weight:800; margin:0 0 8px}
+    .sub{color:var(--muted); margin:0 0 22px; line-height:1.8}
+    .grid{display:grid; grid-template-columns:1.05fr .95fr; gap:22px}
+    .card{
+      background:var(--card); border:1px solid var(--line); border-radius:22px; padding:22px;
+      box-shadow:0 20px 50px rgba(0,0,0,.28); backdrop-filter:blur(12px);
+    }
+    .section-title{font-size:22px; font-weight:800; margin:0 0 14px}
+    .row{display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:14px}
+    .full{grid-column:1/-1}
+    label{display:block; font-size:13px; color:var(--muted); margin-bottom:7px; letter-spacing:.02em}
+    input, select, textarea{
+      width:100%; border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.05); color:var(--text);
+      border-radius:14px; padding:14px 14px; font-size:16px; outline:none;
+    }
+    input[readonly]{opacity:.95}
+    textarea{min-height:94px; resize:vertical}
+    .btns{display:flex; flex-wrap:wrap; gap:12px; margin-top:8px}
+    button{
+      border:0; border-radius:14px; padding:13px 18px; cursor:pointer; font-weight:800; font-size:15px;
+    }
+    .primary{background:linear-gradient(90deg,var(--blue2),var(--blue)); color:#fff}
+    .secondary{background:rgba(255,255,255,.08); color:#fff; border:1px solid rgba(255,255,255,.08)}
+    .success{background:linear-gradient(90deg,#0f8d57,#16a34a); color:#fff}
+    .warn{background:linear-gradient(90deg,#d97706,#f59e0b); color:#fff}
+    .danger{background:linear-gradient(90deg,#b91c1c,#ef4444); color:#fff}
+    .status{
+      margin-top:14px; padding:14px 16px; border-radius:14px; line-height:1.7;
+      background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.08);
+    }
+    .status.ok{background:rgba(22,163,74,.14); border-color:rgba(22,163,74,.3)}
+    .status.err{background:rgba(239,68,68,.14); border-color:rgba(239,68,68,.3)}
+    .status.warn{background:rgba(245,158,11,.14); border-color:rgba(245,158,11,.3)}
+    .preview{
+      width:100%; min-height:280px; background:rgba(255,255,255,.04); border:1px dashed rgba(255,255,255,.14);
+      border-radius:18px; display:grid; place-items:center; overflow:hidden;
+    }
+    .preview img{max-width:100%; width:100%; height:100%; object-fit:cover}
+    .camera-box{
+      width:100%; margin-top:14px; background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08);
+      border-radius:18px; overflow:hidden; display:none;
+    }
+    .camera-box.active{display:block}
+    video{
+      width:100%; max-height:420px; background:#000; display:block; object-fit:cover;
+    }
+    .camera-actions{
+      padding:12px; display:flex; gap:12px; flex-wrap:wrap; border-top:1px solid rgba(255,255,255,.06);
+    }
+    .mini{
+      background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.06); border-radius:16px; padding:16px; margin-top:14px;
+    }
+    .kv{display:grid; grid-template-columns:180px 1fr; gap:8px 12px; font-size:15px}
+    .kv div:nth-child(odd){color:var(--muted)}
+    .pin{
+      display:inline-block; font-size:40px; font-weight:900; letter-spacing:.22em; padding:10px 16px;
+      border-radius:14px; background:rgba(22,163,74,.16); border:1px solid rgba(22,163,74,.28);
+    }
+    .link-box{
+      word-break:break-all; background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.08);
+      padding:14px; border-radius:14px; margin-top:10px;
+    }
+    .hint{font-size:13px; color:var(--muted); line-height:1.7; margin-top:8px}
+    .badge{
+      display:inline-flex; align-items:center; gap:8px; padding:7px 12px; border-radius:999px; background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.08); color:#9ec2ff; font-size:12px; text-transform:uppercase; letter-spacing:.08em;
+      margin-bottom:12px;
+    }
+    canvas{display:none}
+    @media (max-width:980px){ .grid{grid-template-columns:1fr} }
+    @media (max-width:640px){
+      .title{font-size:32px}
+      .row{grid-template-columns:1fr}
+      .kv{grid-template-columns:1fr}
+      .pin{font-size:32px}
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="badge">Police Ticket Writer</div>
+    <h1 class="title">หน้าบันทึกใบสั่งสำหรับเจ้าหน้าที่ตำรวจ</h1>
+    <p class="sub">
+      เวอร์ชันนี้รองรับการกดเปิดกล้องจากหน้าเว็บโดยตรง แล้วกด Capture ให้รูปขึ้นในหน้าได้ทันที
+      จากนั้นสามารถ OCR ป้ายทะเบียน, สร้างเลขที่ใบสั่ง, PIN 3 หลัก, public URL และเขียน NFC ได้
+    </p>
+
+    <div class="grid">
+      <section class="card">
+        <h2 class="section-title">1) เปิดกล้อง / Capture รูปรถ</h2>
+
+        <div class="btns">
+          <button class="primary" id="startCameraBtn" type="button">เปิดกล้อง</button>
+          <button class="success" id="captureBtn" type="button">Capture รูป</button>
+          <button class="danger" id="stopCameraBtn" type="button">ปิดกล้อง</button>
+          <button class="secondary" id="clearPhotoBtn" type="button">ล้างรูป</button>
+        </div>
+
+        <div class="hint">
+          แนะนำเปิดบนมือถือหรือโน้ตบุ๊กที่มีกล้อง และควรใช้ HTTPS เพื่อให้เบราว์เซอร์อนุญาตเข้าถึงกล้อง
+        </div>
+
+        <div class="camera-box" id="cameraBox">
+          <video id="cameraVideo" autoplay playsinline muted></video>
+          <div class="camera-actions">
+            <span class="hint">เมื่อเห็นรถในกล้องแล้ว ให้กด Capture รูป</span>
+          </div>
+        </div>
+
+        <canvas id="captureCanvas"></canvas>
+
+        <div class="preview" id="previewBox">ยังไม่มีรูป</div>
+
+        <div class="btns">
+          <button class="warn" id="readPlateBtn" type="button">2) AI/OCR อ่านป้ายทะเบียนอัตโนมัติ</button>
+        </div>
+
+        <div id="cameraStatus" class="status">สถานะกล้อง: ยังไม่เปิด</div>
+        <div id="ocrStatus" class="status">สถานะ OCR: ยังไม่เริ่ม</div>
+
+        <div class="hint">
+          OCR ในหน้านี้เป็นแบบ best-effort ในเบราว์เซอร์ ถ้ารูปมืด เบลอ หรือป้ายเอียงมาก อาจต้องแก้ไขป้ายทะเบียนด้วยตนเอง
+        </div>
+      </section>
+
+      <section class="card">
+        <h2 class="section-title">3) แบบฟอร์มใบสั่ง</h2>
+        <div class="row">
+          <div>
+            <label for="ticketNo">เลขที่ใบสั่ง</label>
+            <input id="ticketNo" type="text" readonly />
+          </div>
+          <div>
+            <label for="ticketDateTime">วันเวลา</label>
+            <input id="ticketDateTime" type="text" readonly />
+          </div>
+          <div>
+            <label for="plateNo">ป้ายทะเบียนรถ</label>
+            <input id="plateNo" type="text" placeholder="AI จะพยายามกรอกให้อัตโนมัติ" />
+          </div>
+          <div>
+            <label for="location">สถานที่</label>
+            <input id="location" type="text" placeholder="กรอกสถานที่เกิดเหตุ" />
+          </div>
+          <div>
+            <label for="offense">ฐานความผิด</label>
+            <select id="offense">
+              <option value="">เลือกฐานความผิด</option>
+              <option>จอดรถในบริเวณห้ามจอด</option>
+              <option>จอดรถกีดขวางการจราจร</option>
+              <option>จอดซ้อนคัน</option>
+              <option>ขับรถเกินอัตราความเร็วที่กฎหมายกำหนด</option>
+              <option>ฝ่าฝืนสัญญาณจราจร</option>
+              <option>ไม่สวมหมวกนิรภัย</option>
+              <option>ไม่คาดเข็มขัดนิรภัย</option>
+              <option>ใช้โทรศัพท์ขณะขับรถ</option>
+              <option>ไม่มีใบอนุญาตขับขี่</option>
+              <option>อื่น ๆ</option>
+            </select>
+          </div>
+          <div>
+            <label for="fineAmount">ยอดค่าปรับ (บาท)</label>
+            <input id="fineAmount" type="number" min="0" step="1" placeholder="เช่น 500" />
+          </div>
+          <div class="full">
+            <label for="notes">หมายเหตุเพิ่มเติม</label>
+            <textarea id="notes" placeholder="ใส่รายละเอียดเพิ่มเติมได้"></textarea>
+          </div>
+        </div>
+
+        <div class="btns">
+          <button class="primary" id="generateBtn" type="button">8) Generate PIN 3 หลัก + สร้างลิงก์</button>
+          <button class="secondary" id="saveBtn" type="button">9) บันทึกข้อมูล</button>
+          <button class="warn" id="writeNfcBtn" type="button">11) เขียนลิงก์ลง NFC</button>
+        </div>
+
+        <div id="formStatus" class="status">สถานะฟอร์ม: รอกรอกข้อมูล</div>
+
+        <div class="mini">
+          <div class="kv">
+            <div>PIN 3 หลัก</div>
+            <div><span id="pinCode" class="pin">---</span></div>
+
+            <div>Public URL</div>
+            <div class="link-box" id="publicUrl">ยังไม่ได้สร้างลิงก์</div>
+
+            <div>NFC Status</div>
+            <div id="nfcStatus">ยังไม่ได้เขียน NFC</div>
+          </div>
+        </div>
+
+        <div class="hint">
+          ถ้าต้องการให้ “บันทึกข้อมูลลง NFC ได้เรียบร้อย” จริง อุปกรณ์ต้องรองรับ Web NFC ด้วย
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <script>
+    const el = {
+      startCameraBtn: document.getElementById('startCameraBtn'),
+      captureBtn: document.getElementById('captureBtn'),
+      stopCameraBtn: document.getElementById('stopCameraBtn'),
+      clearPhotoBtn: document.getElementById('clearPhotoBtn'),
+      cameraBox: document.getElementById('cameraBox'),
+      cameraVideo: document.getElementById('cameraVideo'),
+      captureCanvas: document.getElementById('captureCanvas'),
+      previewBox: document.getElementById('previewBox'),
+      cameraStatus: document.getElementById('cameraStatus'),
+      readPlateBtn: document.getElementById('readPlateBtn'),
+      ocrStatus: document.getElementById('ocrStatus'),
+
+      ticketNo: document.getElementById('ticketNo'),
+      ticketDateTime: document.getElementById('ticketDateTime'),
+      plateNo: document.getElementById('plateNo'),
+      location: document.getElementById('location'),
+      offense: document.getElementById('offense'),
+      fineAmount: document.getElementById('fineAmount'),
+      notes: document.getElementById('notes'),
+
+      generateBtn: document.getElementById('generateBtn'),
+      saveBtn: document.getElementById('saveBtn'),
+      writeNfcBtn: document.getElementById('writeNfcBtn'),
+
+      formStatus: document.getElementById('formStatus'),
+      pinCode: document.getElementById('pinCode'),
+      publicUrl: document.getElementById('publicUrl'),
+      nfcStatus: document.getElementById('nfcStatus'),
+    };
+
+    let currentStream = null;
+    let currentImageDataUrl = '';
+    let currentPublicUrl = '';
+    let currentRecord = null;
+
+    function setStatus(target, text, cls='') {
+      target.className = 'status' + (cls ? ' ' + cls : '');
+      target.textContent = text;
+    }
+
+    function formatThaiDateTime(date = new Date()) {
+      const d = new Intl.DateTimeFormat('th-TH', {
+        dateStyle: 'medium',
+        timeStyle: 'short'
+      }).format(date);
+      return d.replace(',', '');
+    }
+
+    function generateTicketNo() {
+      const now = new Date();
+      const y = now.getFullYear();
+      const m = String(now.getMonth() + 1).padStart(2, '0');
+      const d = String(now.getDate()).padStart(2, '0');
+      const rand = String(Math.floor(Math.random() * 9000) + 1000);
+      return `TKT-${y}-${m}${d}-${rand}`;
+    }
+
+    function generatePin3() {
+      return String(Math.floor(100 + Math.random() * 900));
+    }
+
+    function initDefaults() {
+      el.ticketNo.value = generateTicketNo();
+      el.ticketDateTime.value = formatThaiDateTime(new Date());
+    }
+
+    async function startCamera() {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        setStatus(el.cameraStatus, 'สถานะกล้อง: เบราว์เซอร์นี้ไม่รองรับการเปิดกล้องจากหน้าเว็บ', 'err');
+        return;
+      }
+
+      try {
+        if (currentStream) stopCamera();
+
+        currentStream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            facingMode: { ideal: 'environment' },
+            width: { ideal: 1280 },
+            height: { ideal: 720 }
+          },
+          audio: false
+        });
+
+        el.cameraVideo.srcObject = currentStream;
+        el.cameraBox.classList.add('active');
+        setStatus(el.cameraStatus, 'สถานะกล้อง: เปิดกล้องเรียบร้อยแล้ว', 'ok');
+      } catch (err) {
+        setStatus(el.cameraStatus, 'สถานะกล้อง: เปิดกล้องไม่สำเร็จ กรุณาอนุญาตกล้องหรือใช้ HTTPS', 'err');
+      }
+    }
+
+    function stopCamera() {
+      if (currentStream) {
+        currentStream.getTracks().forEach(track => track.stop());
+        currentStream = null;
+      }
+      el.cameraVideo.srcObject = null;
+      el.cameraBox.classList.remove('active');
+      setStatus(el.cameraStatus, 'สถานะกล้อง: ปิดกล้องแล้ว', '');
+    }
+
+    function capturePhoto() {
+      if (!currentStream || !el.cameraVideo.videoWidth) {
+        setStatus(el.cameraStatus, 'สถานะกล้อง: กรุณาเปิดกล้องก่อน Capture', 'err');
+        return;
+      }
+
+      const canvas = el.captureCanvas;
+      const video = el.cameraVideo;
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+      currentImageDataUrl = canvas.toDataURL('image/jpeg', 0.95);
+      el.previewBox.innerHTML = `<img src="${currentImageDataUrl}" alt="captured car photo" />`;
+      setStatus(el.cameraStatus, 'สถานะกล้อง: Capture รูปเรียบร้อยแล้ว', 'ok');
+    }
+
+    function cleanPlateText(text) {
+      return text
+        .replace(/\n/g, ' ')
+        .replace(/[|\\]/g, ' ')
+        .replace(/[^0-9A-Za-zก-ฮเแโใไะาำิีึืุูั่้๊๋์ํ\s-]/g, '')
+        .replace(/\s+/g, ' ')
+        .trim();
+    }
+
+    function tryExtractPlate(text) {
+      const cleaned = cleanPlateText(text);
+      const patterns = [
+        /([0-9][ก-ฮ]{2}\s?\d{1,4})/u,
+        /([ก-ฮ]{1,2}\s?\d{1,4})/u,
+        /([A-Z]{1,3}\s?\d{1,4})/i
+      ];
+
+      for (const p of patterns) {
+        const m = cleaned.match(p);
+        if (m) return m[1].replace(/\s+/g, ' ').trim();
+      }
+      return cleaned.slice(0, 30);
+    }
+
+    function dataURLtoBlob(dataurl) {
+      const arr = dataurl.split(',');
+      const mime = arr[0].match(/:(.*?);/)[1];
+      const bstr = atob(arr[1]);
+      let n = bstr.length;
+      const u8arr = new Uint8Array(n);
+      while (n--) u8arr[n] = bstr.charCodeAt(n);
+      return new Blob([u8arr], { type: mime });
+    }
+
+    async function runPlateOCR() {
+      if (!currentImageDataUrl) {
+        setStatus(el.ocrStatus, 'สถานะ OCR: กรุณา Capture รูปก่อน', 'err');
+        return;
+      }
+
+      try {
+        setStatus(el.ocrStatus, 'สถานะ OCR: กำลังอ่านป้ายทะเบียนจากภาพ...', 'warn');
+        const blob = dataURLtoBlob(currentImageDataUrl);
+        const result = await Tesseract.recognize(blob, 'eng+tha');
+        const rawText = result?.data?.text || '';
+        const plate = tryExtractPlate(rawText);
+
+        if (plate) {
+          el.plateNo.value = plate;
+          setStatus(el.ocrStatus, `สถานะ OCR: อ่านสำเร็จ → ${plate}`, 'ok');
+        } else {
+          setStatus(el.ocrStatus, 'สถานะ OCR: อ่านไม่สำเร็จ กรุณากรอกป้ายทะเบียนด้วยตนเอง', 'err');
+        }
+      } catch (err) {
+        setStatus(el.ocrStatus, 'สถานะ OCR: เกิดข้อผิดพลาดระหว่างอ่านภาพ กรุณากรอกป้ายทะเบียนด้วยตนเอง', 'err');
+      }
+    }
+
+    function validateForm() {
+      if (!el.plateNo.value.trim()) return 'กรุณาระบุป้ายทะเบียนรถ';
+      if (!el.location.value.trim()) return 'กรุณาระบุสถานที่';
+      if (!el.offense.value.trim()) return 'กรุณาเลือกฐานความผิด';
+      if (!el.fineAmount.value.trim()) return 'กรุณาระบุยอดค่าปรับ';
+      return '';
+    }
+
+    function buildPublicUrl(record) {
+      const params = new URLSearchParams({
+        ticket: record.ticketNo,
+        plate: record.plateNo,
+        amount: record.fineAmount,
+        datetime: record.ticketDateTime,
+        location: record.location,
+        offense: record.offense,
+        tx: record.transactionId
+      });
+      return `https://smartlock-2yt.pages.dev/?${params.toString()}`;
+    }
+
+    function createRecord() {
+      const err = validateForm();
+      if (err) {
+        setStatus(el.formStatus, `สถานะฟอร์ม: ${err}`, 'err');
+        return null;
+      }
+
+      const record = {
+        ticketNo: el.ticketNo.value.trim(),
+        ticketDateTime: el.ticketDateTime.value.trim(),
+        plateNo: el.plateNo.value.trim(),
+        location: el.location.value.trim(),
+        offense: el.offense.value.trim(),
+        fineAmount: el.fineAmount.value.trim(),
+        notes: el.notes.value.trim(),
+        pin: generatePin3(),
+        transactionId: 'SIM-' + Math.random().toString(36).slice(2, 10).toUpperCase(),
+        carImage: currentImageDataUrl || ''
+      };
+
+      currentRecord = record;
+      currentPublicUrl = buildPublicUrl(record);
+      el.pinCode.textContent = record.pin;
+      el.publicUrl.textContent = currentPublicUrl;
+      setStatus(el.formStatus, 'สถานะฟอร์ม: สร้าง PIN และลิงก์เรียบร้อยแล้ว', 'ok');
+      return record;
+    }
+
+    function saveRecord() {
+      const record = currentRecord || createRecord();
+      if (!record) return;
+
+      const storeKey = 'police_ticket_records';
+      const existing = JSON.parse(localStorage.getItem(storeKey) || '[]');
+      existing.unshift({
+        ...record,
+        publicUrl: currentPublicUrl,
+        savedAt: new Date().toISOString()
+      });
+      localStorage.setItem(storeKey, JSON.stringify(existing));
+      setStatus(el.formStatus, 'สถานะฟอร์ม: บันทึกข้อมูลเรียบร้อยแล้ว', 'ok');
+    }
+
+    async function writeNfc() {
+      const record = currentRecord || createRecord();
+      if (!record) return;
+
+      if (!('NDEFReader' in window)) {
+        el.nfcStatus.textContent = 'อุปกรณ์หรือเบราว์เซอร์นี้ไม่รองรับ Web NFC';
+        setStatus(el.formStatus, 'สถานะฟอร์ม: ไม่สามารถเขียน NFC ได้ เพราะอุปกรณ์ไม่รองรับ Web NFC', 'err');
+        return;
+      }
+
+      try {
+        const ndef = new NDEFReader();
+        await ndef.write({
+          records: [{
+            recordType: "url",
+            data: currentPublicUrl
+          }]
+        });
+        el.nfcStatus.textContent = 'บันทึกข้อมูลลง NFC ได้เรียบร้อย';
+        setStatus(el.formStatus, 'สถานะฟอร์ม: บันทึกข้อมูลลง NFC ได้เรียบร้อย', 'ok');
+      } catch (err) {
+        el.nfcStatus.textContent = 'เขียน NFC ไม่สำเร็จ หรือผู้ใช้ยกเลิก';
+        setStatus(el.formStatus, 'สถานะฟอร์ม: เขียน NFC ไม่สำเร็จ กรุณาลองใหม่', 'err');
+      }
+    }
+
+    function clearPhoto() {
+      currentImageDataUrl = '';
+      el.previewBox.innerHTML = 'ยังไม่มีรูป';
+      setStatus(el.ocrStatus, 'สถานะ OCR: ยังไม่เริ่ม', '');
+      setStatus(el.cameraStatus, 'สถานะกล้อง: พร้อมถ่ายรูปใหม่', '');
+    }
+
+    function bindEvents() {
+      el.startCameraBtn.addEventListener('click', startCamera);
+      el.captureBtn.addEventListener('click', capturePhoto);
+      el.stopCameraBtn.addEventListener('click', stopCamera);
+      el.clearPhotoBtn.addEventListener('click', clearPhoto);
+      el.readPlateBtn.addEventListener('click', runPlateOCR);
+      el.generateBtn.addEventListener('click', createRecord);
+      el.saveBtn.addEventListener('click', saveRecord);
+      el.writeNfcBtn.addEventListener('click', writeNfc);
+      window.addEventListener('beforeunload', stopCamera);
+    }
+
+    initDefaults();
+    bindEvents();
+  </script>
+</body>
+</html>

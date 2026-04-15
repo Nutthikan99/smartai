@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Smart Wheel Lock System</title>
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#08111f;
+      --bg2:#0d1830;
+      --card:rgba(12,22,43,.88);
+      --line:rgba(255,255,255,.10);
+      --text:#f8fbff;
+      --muted:rgba(255,255,255,.72);
+      --blue:#3b82f6;
+      --blue2:#1d4ed8;
+      --green:#16a34a;
+      --green2:#15803d;
+      --shadow:0 24px 60px rgba(0,0,0,.30);
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:'Inter','Prompt',system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(circle at top right, rgba(59,130,246,.18), transparent 28%),
+        linear-gradient(180deg, var(--bg) 0%, var(--bg2) 100%);
+      min-height:100vh;
+    }
+    .wrap{
+      max-width:1280px;
+      margin:0 auto;
+      padding:32px 20px 40px;
+    }
+    .hero{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:28px;
+      padding:34px 32px;
+      box-shadow:var(--shadow);
+      backdrop-filter:blur(12px);
+    }
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:8px 14px;
+      border-radius:999px;
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.10);
+      color:#a9c7ff;
+      font-size:12px;
+      font-weight:700;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+      margin-bottom:14px;
+    }
+    h1{
+      margin:0 0 14px;
+      font-size:52px;
+      line-height:1.08;
+      font-weight:900;
+    }
+    .lead{
+      margin:0;
+      color:var(--muted);
+      font-size:20px;
+      line-height:1.8;
+      max-width:980px;
+    }
+    .benefits{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:16px;
+      margin-top:26px;
+    }
+    .benefit{
+      background:rgba(255,255,255,.04);
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:20px;
+      padding:18px;
+    }
+    .benefit h3{
+      margin:0 0 8px;
+      font-size:18px;
+    }
+    .benefit p{
+      margin:0;
+      color:var(--muted);
+      line-height:1.7;
+      font-size:15px;
+    }
+    .portal-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:22px;
+      margin-top:24px;
+    }
+    .portal{
+      display:block;
+      text-decoration:none;
+      color:inherit;
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:26px;
+      padding:26px;
+      box-shadow:var(--shadow);
+      transition:transform .18s ease, border-color .18s ease, box-shadow .18s ease;
+      min-height:280px;
+    }
+    .portal:hover{
+      transform:translateY(-4px);
+      border-color:rgba(255,255,255,.20);
+      box-shadow:0 28px 68px rgba(0,0,0,.38);
+    }
+    .portal-head{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:14px;
+      margin-bottom:16px;
+    }
+    .icon{
+      width:62px;
+      height:62px;
+      border-radius:18px;
+      display:grid;
+      place-items:center;
+      font-size:28px;
+      font-weight:800;
+      flex:0 0 auto;
+    }
+    .portal-title{
+      margin:0 0 8px;
+      font-size:32px;
+      line-height:1.15;
+      font-weight:900;
+    }
+    .portal-sub{
+      margin:0;
+      color:var(--muted);
+      line-height:1.8;
+      font-size:16px;
+    }
+    .list{
+      margin:18px 0 0;
+      padding:0;
+      list-style:none;
+      display:grid;
+      gap:10px;
+    }
+    .list li{
+      color:var(--text);
+      background:rgba(255,255,255,.04);
+      border:1px solid rgba(255,255,255,.06);
+      border-radius:14px;
+      padding:12px 14px;
+      line-height:1.6;
+      font-size:15px;
+    }
+    .cta{
+      margin-top:18px;
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      padding:12px 16px;
+      border-radius:14px;
+      font-weight:800;
+      font-size:15px;
+    }
+    .staff .icon{
+      background:rgba(59,130,246,.16);
+      border:1px solid rgba(59,130,246,.34);
+      color:#93c5fd;
+    }
+    .staff .cta{
+      background:linear-gradient(90deg,var(--blue2),var(--blue));
+      color:#fff;
+    }
+    .people .icon{
+      background:rgba(22,163,74,.16);
+      border:1px solid rgba(22,163,74,.34);
+      color:#86efac;
+    }
+    .people .cta{
+      background:linear-gradient(90deg,var(--green2),var(--green));
+      color:#fff;
+    }
+    .footer-note{
+      margin-top:18px;
+      text-align:center;
+      color:var(--muted);
+      font-size:14px;
+      line-height:1.7;
+    }
+    @media (max-width:960px){
+      h1{font-size:40px}
+      .benefits{grid-template-columns:1fr}
+      .portal-grid{grid-template-columns:1fr}
+    }
+    @media (max-width:640px){
+      .wrap{padding:20px 14px 28px}
+      .hero,.portal{padding:20px}
+      h1{font-size:34px}
+      .lead{font-size:17px}
+      .portal-title{font-size:28px}
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="hero">
+      <div class="badge">Smart Wheel Lock Payment System</div>
+      <h1>ระบบบริหารจัดการชำระค่าปรับ และการปลดล็อคล้ออัตโนมัติ</h1>
+      <p class="lead">
+        ระบบนี้ช่วยให้การดำเนินงานระหว่างเจ้าหน้าที่และประชาชนเป็นไปอย่างรวดเร็ว โปร่งใส และตรวจสอบได้ โดยเชื่อมกระบวนการตั้งแต่การบันทึกข้อมูลใบสั่ง การสร้างลิงก์สำหรับชำระค่าปรับ การสร้าง PIN สำหรับปลดล็อค ไปจนถึงการใช้งานผ่าน NFC และหน้าเว็บสำหรับประชาชนในลำดับเดียวกัน
+      </p>
+
+      <div class="benefits">
+        <div class="benefit">
+          <h3>ลดความซ้ำซ้อนในการทำงาน</h3>
+          <p>เจ้าหน้าที่สามารถบันทึกข้อมูลได้ในระบบเดียว ทำให้ลดการกรอกข้อมูลซ้ำ ลดความผิดพลาด และเพิ่มความรวดเร็วในการปฏิบัติงานภาคสนาม</p>
+        </div>
+        <div class="benefit">
+          <h3>ประชาชนเข้าถึงข้อมูลได้ง่าย</h3>
+          <p>ประชาชนสามารถเข้าดูใบสั่ง รายละเอียดการกระทำผิด ยอดค่าปรับ และขั้นตอนการปลดล็อคได้จากลิงก์ที่ระบบสร้างให้โดยตรง</p>
+        </div>
+        <div class="benefit">
+          <h3>รองรับการต่อยอดเชิงระบบจริง</h3>
+          <p>โครงสร้างหน้าเว็บถูกออกแบบให้พร้อมเชื่อมกับ OCR, AI, QR Payment, Web NFC และ backend ได้ในอนาคตโดยไม่ต้องออกแบบระบบใหม่ทั้งหมด</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="portal-grid">
+      <a class="portal staff" href="police_ticket_workflow.html">
+        <div class="portal-head">
+          <div>
+            <h2 class="portal-title">สำหรับเจ้าหน้าที่</h2>
+            <p class="portal-sub">
+              ใช้สำหรับบันทึกข้อมูลใบสั่ง ถ่ายรูปรถ อ่านป้ายทะเบียน สร้าง PIN สร้างลิงก์สำหรับเจ้าของรถ และเขียนข้อมูลลง NFC
+            </p>
+          </div>
+          <div class="icon">👮</div>
+        </div>
+
+        <ul class="list">
+          <li>บันทึกข้อมูลรถและใบสั่ง</li>
+          <li>สร้างเลขที่ใบสั่งและวันเวลาอัตโนมัติ</li>
+          <li>สร้าง PIN 3 หลักและ Link สำหรับชำระค่าปรับ</li>
+          <li>รองรับการเขียน URL ลง NFC</li>
+        </ul>
+
+        <div class="cta">เข้าสู่หน้าปฏิบัติงานเจ้าหน้าที่ →</div>
+      </a>
+
+      <a class="portal people" href="people.html">
+        <div class="portal-head">
+          <div>
+            <h2 class="portal-title">สำหรับประชาชน</h2>
+            <p class="portal-sub">
+              ใช้สำหรับดูข้อมูลใบสั่ง รายละเอียดการกระทำผิด ชำระค่าปรับผ่าน QR หรือช่องทางที่ระบบกำหนด และรับ PIN สำหรับปลดล็อค
+            </p>
+          </div>
+          <div class="icon">🧾</div>
+        </div>
+
+        <ul class="list">
+          <li>ดูข้อมูลใบสั่งและยอดค่าปรับ</li>
+          <li>เข้าถึงลิงก์ชำระเงินได้ทันที</li>
+          <li>ตรวจสอบสถานะการชำระเงิน</li>
+          <li>รับ PIN เพื่อใช้ปลดล็อคอุปกรณ์</li>
+        </ul>
+
+        <div class="cta">เข้าสู่หน้าสำหรับประชาชน →</div>
+      </a>
+    </section>
+
+    <div class="footer-note">
+      หน้าแรกนี้เป็นศูนย์กลางการเข้าใช้งานระบบ โดยแยกบทบาทการใช้งานระหว่างเจ้าหน้าที่และประชาชนอย่างชัดเจน
+    </div>
+  </div>
+</body>
+</html>

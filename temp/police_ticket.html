@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>ออกใบสั่งจราจร — SmartKey</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:system-ui,-apple-system,sans-serif;background:#0b1020;color:#fff;padding:24px 16px}
+    .shell{max-width:720px;margin:0 auto}
+    .page-title{font-size:22px;font-weight:500;margin-bottom:4px}
+    .page-sub{font-size:14px;color:rgba(255,255,255,.5);margin-bottom:24px}
+    .section{background:rgba(15,23,42,.85);border:0.5px solid rgba(255,255,255,.1);border-radius:16px;padding:22px;margin-bottom:16px}
+    .sec-header{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+    .sec-num{width:30px;height:30px;border-radius:50%;background:rgba(59,130,246,.2);border:0.5px solid rgba(59,130,246,.5);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:500;color:#7db6ff;flex-shrink:0}
+    .sec-num.done{background:rgba(34,197,94,.2);border-color:rgba(34,197,94,.5);color:#6ee7a0}
+    .sec-title{font-size:15px;font-weight:500}
+    .sec-sub{font-size:13px;color:rgba(255,255,255,.45);margin-top:2px}
+    .field{margin-bottom:14px}
+    .field:last-child{margin-bottom:0}
+    .field label{display:block;font-size:12px;color:rgba(255,255,255,.5);margin-bottom:6px;letter-spacing:.04em;text-transform:uppercase}
+    .field input,.field select{width:100%;background:rgba(255,255,255,.05);border:0.5px solid rgba(255,255,255,.12);border-radius:10px;padding:10px 14px;color:#fff;font-size:14px;outline:none;transition:border-color .2s}
+    .field input:focus,.field select:focus{border-color:rgba(59,130,246,.6)}
+    .field select option{background:#1e2a40;color:#fff}
+    .row2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+    .photo-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .photo-wrap{display:flex;flex-direction:column;gap:8px}
+    .photo-preview{width:100%;height:150px;background:rgba(255,255,255,.04);border:0.5px dashed rgba(255,255,255,.2);border-radius:12px;display:flex;align-items:center;justify-content:center;overflow:hidden}
+    .photo-preview img{width:100%;height:100%;object-fit:cover;border-radius:12px}
+    .ph-inner{text-align:center;color:rgba(255,255,255,.3);font-size:13px}
+    .ph-inner div:first-child{font-size:24px;margin-bottom:4px}
+    .btn-photo{width:100%;padding:10px;background:rgba(59,130,246,.18);border:1px solid rgba(59,130,246,.5);border-radius:9px;color:#93c5fd;font-size:14px;font-weight:500;cursor:pointer;position:relative;overflow:hidden}
+    .btn-photo input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer}
+    .btn-ai{padding:10px 16px;background:rgba(99,102,241,.2);border:1px solid rgba(99,102,241,.5);border-radius:10px;color:#c4b5fd;font-size:14px;font-weight:500;cursor:pointer;white-space:nowrap;flex-shrink:0;height:42px}
+    .plate-row{display:flex;gap:10px;align-items:flex-end;margin-bottom:14px}
+    .plate-row .field{flex:1;margin-bottom:0}
+    .ai-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(34,197,94,.12);border:0.5px solid rgba(34,197,94,.3);border-radius:999px;padding:4px 10px;font-size:12px;color:#6ee7a0}
+    .fine-row{display:flex;align-items:center;gap:10px}
+    .fine-row input{flex:1}
+    .currency{font-size:16px;color:rgba(255,255,255,.5)}
+    .btn-primary{width:100%;padding:16px;background:#2563eb;border:none;border-radius:12px;color:#fff;font-size:16px;font-weight:500;cursor:pointer;letter-spacing:.02em}
+    .btn-secondary{width:100%;padding:16px;background:#4338ca;border:none;border-radius:12px;color:#fff;font-size:16px;font-weight:500;cursor:pointer;letter-spacing:.02em}
+    .btn-nfc-main{width:100%;padding:18px;background:#d97706;border:none;border-radius:12px;color:#fff;font-size:16px;font-weight:500;cursor:pointer;letter-spacing:.02em}
+    .btn-nfc-main:disabled{background:#44352a;color:rgba(255,255,255,.35);cursor:not-allowed}
+    .btn-nfc-main.waiting{background:#92400e}
+    .btn-nfc-main.success-btn{background:#15803d}
+    .pin-display{text-align:center;padding:20px;background:rgba(34,197,94,.08);border:0.5px solid rgba(34,197,94,.25);border-radius:12px;margin-bottom:16px;display:none}
+    .pin-label-txt{font-size:11px;color:rgba(255,255,255,.45);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px}
+    .pin-digits{font-size:52px;font-weight:700;letter-spacing:.45rem}
+    .link-display{background:rgba(255,255,255,.04);border:0.5px solid rgba(255,255,255,.1);border-radius:10px;padding:12px 14px;font-size:13px;color:#7db6ff;word-break:break-all;margin-bottom:16px;display:none}
+    /* NFC Zone */
+    .nfc-zone{display:flex;flex-direction:column;align-items:center;gap:16px;padding:20px 0 24px}
+    .nfc-target{position:relative;width:180px;height:180px;display:flex;align-items:center;justify-content:center}
+    .nfc-ring{position:absolute;border-radius:50%;border:1.5px solid rgba(245,158,11,.22)}
+    .nfc-ring-1{width:180px;height:180px}
+    .nfc-ring-2{width:138px;height:138px}
+    .nfc-ring-3{width:96px;height:96px}
+    .nfc-center{width:72px;height:72px;border-radius:50%;background:rgba(245,158,11,.12);border:2px solid rgba(245,158,11,.6);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;z-index:1}
+    .nfc-center-icon{font-size:26px;line-height:1}
+    .nfc-center-label{font-size:10px;color:#fcd34d;letter-spacing:.06em;text-transform:uppercase;font-weight:500}
+    .nfc-target.waiting .nfc-ring-1{animation:np 2s infinite .4s}
+    .nfc-target.waiting .nfc-ring-2{animation:np 2s infinite .2s}
+    .nfc-target.waiting .nfc-ring-3{animation:np 2s infinite}
+    .nfc-target.waiting .nfc-center{animation:ng 2s infinite;border-color:rgba(245,158,11,.9)}
+    @keyframes np{0%,100%{border-color:rgba(245,158,11,.12)}50%{border-color:rgba(245,158,11,.7)}}
+    @keyframes ng{0%,100%{background:rgba(245,158,11,.1)}50%{background:rgba(245,158,11,.3)}}
+    .nfc-target.success .nfc-ring-1,.nfc-target.success .nfc-ring-2,.nfc-target.success .nfc-ring-3{border-color:rgba(34,197,94,.35);animation:none}
+    .nfc-target.success .nfc-center{background:rgba(34,197,94,.2);border-color:#22c55e;animation:none}
+    .nfc-hint{font-size:14px;color:rgba(255,255,255,.55);text-align:center;line-height:1.7}
+    .nfc-hint b{color:#fcd34d;font-weight:500}
+    .nfc-hint.waiting-txt{color:#fcd34d}
+    .nfc-hint.success-txt{color:#6ee7a0}
+    .nfc-error{display:none;margin-top:12px;padding:14px;background:rgba(239,68,68,.08);border:0.5px solid rgba(239,68,68,.3);border-radius:12px;font-size:13px;color:#fca5a5;line-height:1.6}
+    .not-sup{padding:14px;background:rgba(239,68,68,.08);border:0.5px solid rgba(239,68,68,.25);border-radius:12px;font-size:13px;color:#fca5a5;line-height:1.7;display:none;margin-bottom:14px}
+    @media(max-width:560px){
+      .row2,.photo-grid{grid-template-columns:1fr}
+      .plate-row{flex-direction:column}
+      .btn-ai{width:100%;height:auto}
+    }
+  </style>
+</head>
+<body>
+<div class="shell">
+  <div class="page-title">ออกใบสั่งจราจร</div>
+  <div class="page-sub">ระบบบันทึกข้อมูล PIN และเขียน NFC อัตโนมัติ</div>
+
+  <!-- 1: รูปภาพ -->
+  <div class="section">
+    <div class="sec-header">
+      <div class="sec-num" id="n1">1</div>
+      <div><div class="sec-title">ถ่ายรูปหลักฐาน</div><div class="sec-sub">AI จะอ่านป้ายทะเบียนอัตโนมัติ</div></div>
+    </div>
+    <div class="photo-grid">
+      <div class="photo-wrap">
+        <div class="photo-preview" id="preview1"><div class="ph-inner"><div>📷</div><div>รูปรถ / ป้ายทะเบียน</div></div></div>
+        <button class="btn-photo">📷 ถ่ายรูป / เลือกรูป<input type="file" accept="image/*" capture="environment" onchange="handlePhoto(this,1)"></button>
+        <div id="aiStatus" style="min-height:24px;margin-top:4px"></div>
+      </div>
+      <div class="photo-wrap">
+        <div class="photo-preview" id="preview2"><div class="ph-inner"><div>📷</div><div>หลักฐานเพิ่มเติม</div></div></div>
+        <button class="btn-photo">📷 ถ่ายรูป / เลือกรูป<input type="file" accept="image/*" capture="environment" onchange="handlePhoto(this,2)"></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2: ข้อมูลใบสั่ง -->
+  <div class="section">
+    <div class="sec-header">
+      <div class="sec-num" id="n2">2</div>
+      <div><div class="sec-title">กรอกข้อมูลใบสั่ง</div><div class="sec-sub">ตรวจสอบและแก้ไขให้ถูกต้อง</div></div>
+    </div>
+    <div class="row2">
+      <div class="field"><label>เลขที่ใบสั่ง</label><input type="text" id="ticketNo" readonly style="color:rgba(255,255,255,.4)"></div>
+      <div class="field"><label>วันเวลา</label><input type="text" id="ticketDateTime" readonly style="color:rgba(255,255,255,.4)"></div>
+    </div>
+    <div class="plate-row">
+      <div class="field"><label>ป้ายทะเบียนรถ</label><input type="text" id="plateNo" placeholder="AI จะกรอกให้อัตโนมัติ"></div>
+      <button class="btn-ai" onclick="runAI()">AI อ่านป้าย</button>
+    </div>
+    <div class="field"><label>สถานที่</label><input type="text" id="location" placeholder="เช่น ถนนพหลโยธิน เขตจตุจักร กรุงเทพมหานคร"></div>
+    <div class="field">
+      <label>ฐานความผิด</label>
+      <select id="offense">
+        <option value="">-- เลือกฐานความผิด --</option>
+        <option>จอดรถในบริเวณห้ามจอด หรือกีดขวางการจราจร</option>
+        <option>ฝ่าไฟแดง</option>
+        <option>ขับรถเร็วเกินกำหนด</option>
+        <option>ไม่สวมหมวกนิรภัย</option>
+        <option>ไม่คาดเข็มขัดนิรภัย</option>
+        <option>จอดรถบนทางม้าลาย</option>
+        <option>ขับรถย้อนศร</option>
+        <option>ใช้โทรศัพท์ขณะขับรถ</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>ยอดค่าปรับ (บาท)</label>
+      <div class="fine-row"><span class="currency">฿</span><input type="number" id="fineAmount" placeholder="500" min="0"></div>
+    </div>
+  </div>
+
+  <!-- 3: PIN -->
+  <div class="section">
+    <div class="sec-header">
+      <div class="sec-num" id="n3">3</div>
+      <div><div class="sec-title">สร้าง PIN ปลดล็อค</div><div class="sec-sub">ระบบสร้าง PIN 3 หลักอัตโนมัติ</div></div>
+    </div>
+    <div class="pin-display" id="pinDisplay">
+      <div class="pin-label-txt">PIN 3 หลักสำหรับปลดล็อค</div>
+      <div class="pin-digits" id="pinCode">---</div>
+    </div>
+    <button class="btn-primary" onclick="doGenerate()">สร้าง PIN และดำเนินการต่อ</button>
+  </div>
+
+  <!-- 4: บันทึก Link -->
+  <div class="section">
+    <div class="sec-header">
+      <div class="sec-num" id="n4">4</div>
+      <div><div class="sec-title">บันทึกข้อมูลและรับ Link</div><div class="sec-sub">ระบบสร้าง URL สำหรับเจ้าของรถ</div></div>
+    </div>
+    <div class="link-display" id="linkDisplay"></div>
+    <button class="btn-secondary" id="btnSave" onclick="doSave()">บันทึกข้อมูลและรับ Link URL</button>
+  </div>
+
+  <!-- 5: NFC -->
+  <div class="section">
+    <div class="sec-header">
+      <div class="sec-num" id="n5">5</div>
+      <div><div class="sec-title">เขียน Link ลงแผ่น NFC</div><div class="sec-sub">วางแผ่น NFC ตรงวงกลม แล้วกดปุ่มสีส้ม</div></div>
+    </div>
+    <div class="not-sup" id="nfcNotSupported">
+      ⚠️ กรุณาใช้ <strong>Chrome บน Android</strong> เพื่อเขียน NFC จากเว็บได้โดยตรงครับ
+    </div>
+    <div class="nfc-zone">
+      <div class="nfc-target" id="nfcTarget">
+        <div class="nfc-ring nfc-ring-1"></div>
+        <div class="nfc-ring nfc-ring-2"></div>
+        <div class="nfc-ring nfc-ring-3"></div>
+        <div class="nfc-center">
+          <div class="nfc-center-icon" id="nfcIcon">📡</div>
+          <div class="nfc-center-label" id="nfcLabel">NFC</div>
+        </div>
+      </div>
+      <div class="nfc-hint" id="nfcHint">วางแผ่น NFC <b>ตรงวงกลม</b> แล้วกดปุ่มด้านล่าง</div>
+    </div>
+    <button class="btn-nfc-main" id="btnNFC" onclick="doNFC()" disabled>
+      วางแผ่น NFC แล้วกดที่นี่เพื่อเขียน Link
+    </button>
+    <div class="nfc-error" id="nfcError"></div>
+  </div>
+</div>
+
+<script>
+  function pad(n){return String(n).padStart(2,'0')}
+  const now=new Date(), thY=now.getFullYear()+543;
+  const mo=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+  document.getElementById('ticketNo').value=`TKT-${now.getFullYear()}-${pad(now.getMonth()+1)}${pad(now.getDate())}-${Math.floor(1000+Math.random()*9000)}`;
+  document.getElementById('ticketDateTime').value=`${now.getDate()} ${mo[now.getMonth()]} ${thY} ${pad(now.getHours())}:${pad(now.getMinutes())} น.`;
+
+  const nfcOk = 'NDEFReader' in window;
+  if(!nfcOk) document.getElementById('nfcNotSupported').style.display='block';
+
+  function handlePhoto(inp, num){
+    const f=inp.files[0]; if(!f) return;
+    const r=new FileReader();
+    r.onload=e=>{
+      document.getElementById('preview'+num).innerHTML=`<img src="${e.target.result}">`;
+      if(num===1) setTimeout(runAI, 700);
+    };
+    r.readAsDataURL(f);
+  }
+
+  function runAI(){
+    const s=document.getElementById('aiStatus');
+    s.innerHTML='<span style="font-size:12px;color:rgba(255,255,255,.4)">กำลังอ่านป้าย...</span>';
+    // TODO: เชื่อม AI จริง — ตอนนี้จำลอง
+    const plates=['1กข 1234 กรุงเทพมหานคร','2คง 5678 นนทบุรี','3จฉ 9012 เชียงใหม่','4ชส 3456 ภูเก็ต'];
+    setTimeout(()=>{
+      document.getElementById('plateNo').value=plates[Math.floor(Math.random()*plates.length)];
+      mark('n1');
+      s.innerHTML='<div class="ai-badge">✓ อ่านป้ายสำเร็จ</div>';
+    }, 1400);
+  }
+
+  let pin=null, ticketUrl=null;
+
+  function doGenerate(){
+    const plate=document.getElementById('plateNo').value;
+    const offense=document.getElementById('offense').value;
+    const fine=document.getElementById('fineAmount').value;
+    if(!plate||!offense||!fine){alert('กรุณากรอก: ป้ายทะเบียน, ฐานความผิด และยอดค่าปรับ'); return;}
+    pin=Math.floor(100+Math.random()*900).toString();
+    // TODO: เชื่อม API จริง — POST /api/create-payment-session แล้วรับ pin จาก backend
+    document.getElementById('pinCode').textContent=pin;
+    document.getElementById('pinDisplay').style.display='block';
+    mark('n2'); mark('n3');
+  }
+
+  function doSave(){
+    if(!pin){alert('กรุณาสร้าง PIN ก่อน'); return;}
+    const tid=document.getElementById('ticketNo').value;
+    ticketUrl=`https://innovetixai.com/?ticket=${tid}`;
+    // TODO: เชื่อม API จริง — บันทึกลง backend แล้วรับ URL จริง
+    document.getElementById('linkDisplay').textContent=ticketUrl;
+    document.getElementById('linkDisplay').style.display='block';
+    document.getElementById('btnSave').style.display='none';
+    document.getElementById('btnNFC').disabled=false;
+    mark('n4');
+  }
+
+  async function doNFC(){
+    if(!ticketUrl){alert('กรุณาบันทึก Link ก่อน'); return;}
+    const target=document.getElementById('nfcTarget');
+    const btn=document.getElementById('btnNFC');
+    const hint=document.getElementById('nfcHint');
+    const err=document.getElementById('nfcError');
+    const icon=document.getElementById('nfcIcon');
+    const lbl=document.getElementById('nfcLabel');
+
+    err.style.display='none';
+    target.className='nfc-target waiting';
+    btn.className='btn-nfc-main waiting';
+    btn.disabled=true;
+    btn.textContent='กำลังรอแตะแผ่น NFC...';
+    hint.textContent='แตะมือถือกับแผ่น NFC ค้างไว้จนสำเร็จ';
+    hint.className='nfc-hint waiting-txt';
+
+    if(!nfcOk){
+      resetNFC();
+      err.textContent='⚠️ กรุณาใช้ Chrome บน Android เพื่อเขียน NFC';
+      err.style.display='block';
+      return;
+    }
+
+    try{
+      const ndef=new NDEFReader();
+      await ndef.write({records:[{recordType:'url', data:ticketUrl}]});
+      target.className='nfc-target success';
+      icon.textContent='✓';
+      lbl.textContent='สำเร็จ';
+      btn.className='btn-nfc-main success-btn';
+      btn.textContent='เขียน NFC สำเร็จแล้ว ✓';
+      btn.disabled=true;
+      hint.textContent='เจ้าของรถสแกน NFC เพื่อชำระเงินได้ทันที';
+      hint.className='nfc-hint success-txt';
+      mark('n5');
+    }catch(e){
+      resetNFC();
+      if(e.name==='NotAllowedError') err.textContent='⚠️ กรุณาอนุญาต NFC เมื่อเบราว์เซอร์ถาม แล้วลองใหม่';
+      else if(e.name==='NotSupportedError') err.textContent='⚠️ กรุณาเปิด NFC ในการตั้งค่าของมือถือก่อน';
+      else err.textContent='⚠️ '+e.message;
+      err.style.display='block';
+    }
+  }
+
+  function resetNFC(){
+    const btn=document.getElementById('btnNFC');
+    document.getElementById('nfcTarget').className='nfc-target';
+    btn.className='btn-nfc-main';
+    btn.disabled=false;
+    btn.textContent='วางแผ่น NFC แล้วกดที่นี่เพื่อเขียน Link';
+    document.getElementById('nfcHint').textContent='วางแผ่น NFC ตรงวงกลม แล้วกดปุ่มด้านล่าง';
+    document.getElementById('nfcHint').className='nfc-hint';
+  }
+
+  function mark(id){
+    const el=document.getElementById(id);
+    el.textContent='✓';
+    el.classList.add('done');
+  }
+</script>
+</body>
+</html>
